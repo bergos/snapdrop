@@ -5,13 +5,21 @@ class SnapdropServer {
 
     constructor(port) {
         const WebSocket = require('ws');
-        this._wss = new WebSocket.Server({ port: port });
+
+        if (port) {
+          this._wss = new WebSocket.Server({ port: port });
+        } else {
+          this._wss = new WebSocket.Server({ noServer: true });
+        }
+
         this._wss.on('connection', (socket, request) => this._onConnection(new Peer(socket, request)));
         this._wss.on('headers', (headers, response) => this._onHeaders(headers, response));
 
         this._rooms = {};
 
-        console.log('Snapdrop is running on port', port);
+        if (port) {
+          console.log('Snapdrop is running on port', port);
+        }
     }
 
     _onConnection(peer) {
@@ -231,4 +239,8 @@ class Peer {
     };
 }
 
-const server = new SnapdropServer(process.env.PORT || 3000);
+if (require.main === module) {
+  const server = new SnapdropServer(process.env.PORT || 3000);
+} else {
+  module.exports = SnapdropServer
+}
